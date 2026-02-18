@@ -83,17 +83,17 @@ export class BattleScreen {
         <div class="opponent-hand" id="opp-hand"></div>
         <div class="opponent-field">
           <div class="side-piles">
-            <div class="pile"><div class="pile-label">Prizes</div>
-              <div class="prize-grid" id="opp-prizes"></div></div>
+            <div class="pile"><div class="pile-label">Deck</div><div class="pile-count">${o.deck.length}</div>
+              <div class="pile-card face-down"><img src="/images/cardback.jpg" alt="Deck"></div></div>
+            <div class="pile"><div class="pile-label">Discard</div><div class="pile-count">${o.discard.length}</div></div>
           </div>
           <div class="center-field">
             <div class="bench-zone" id="opp-bench"></div>
             <div class="active-zone" id="opp-active"></div>
           </div>
           <div class="side-piles">
-            <div class="pile"><div class="pile-label">Deck</div><div class="pile-count">${o.deck.length}</div>
-              <div class="pile-card face-down"><img src="/images/cardback.jpg" alt="Deck"></div></div>
-            <div class="pile"><div class="pile-label">Discard</div><div class="pile-count">${o.discard.length}</div></div>
+            <div class="pile"><div class="pile-label">Prizes</div>
+              <div class="prize-grid" id="opp-prizes"></div></div>
           </div>
         </div>
       </div>
@@ -126,8 +126,11 @@ export class BattleScreen {
         <div class="player-hand" id="player-hand"></div>
       </div>
 
-      <!-- Action Bar -->
-      <div class="action-bar" id="action-bar"></div>`;
+      <!-- Action Bar (Buttons only) -->
+      <div class="action-bar" id="action-bar"></div>
+      
+      <!-- Instruction Toast (Center Overlay) -->
+      <div id="instruction-toast" class="instruction-toast"></div>`;
 
         this.renderCards();
         this.renderActionBar();
@@ -162,7 +165,8 @@ export class BattleScreen {
         const oppActive = document.getElementById('opp-active');
         if (o.active) {
             oppActive.appendChild(createCardElement(o.active, {
-                onClick: (c) => showCardDetail(c, this.container)
+                onContextMenu: (c) => showCardDetail(c, this.container),
+                onClick: () => { } // No op left click
             }));
         }
 
@@ -171,7 +175,8 @@ export class BattleScreen {
         for (let i = 0; i < 5; i++) {
             if (o.bench[i]) {
                 const slot = createCardElement(o.bench[i], {
-                    onClick: (c) => showCardDetail(c, this.container)
+                    onContextMenu: (c) => showCardDetail(c, this.container),
+                    onClick: () => { } // No op left click
                 });
                 oppBench.appendChild(slot);
             } else {
@@ -195,7 +200,8 @@ export class BattleScreen {
         if (p.active) {
             const el = createCardElement(p.active, {
                 className: 'active-highlight',
-                onClick: (c) => this.handleActiveClick(c)
+                onClick: (c) => this.handleActiveClick(c),
+                onContextMenu: (c) => this.handleCardContextMenu(c, 'active')
             });
             playerActive.appendChild(el);
         }
@@ -205,7 +211,8 @@ export class BattleScreen {
         for (let i = 0; i < 5; i++) {
             if (p.bench[i]) {
                 const slot = createCardElement(p.bench[i], {
-                    onClick: (c) => this.handleBenchClick(c, i)
+                    onClick: (c) => this.handleBenchClick(c, i),
+                    onContextMenu: (c) => this.handleCardContextMenu(c, 'bench')
                 });
                 if (this.awaitingTarget === 'energy' || this.awaitingTarget === 'evolve' || this.awaitingTarget === 'retreat') {
                     slot.classList.add('selectable');
@@ -237,7 +244,8 @@ export class BattleScreen {
         p.hand.forEach(card => {
             const el = createCardElement(card, {
                 className: this.selectedCard?.uid === card.uid ? 'selected' : '',
-                onClick: () => this.handleHandClick(card)
+                onClick: () => this.handleHandClick(card),
+                onContextMenu: (c) => showCardDetail(c, this.container)
             });
             if (isPlayerTurn) el.classList.add('selectable');
             playerHand.appendChild(el);
@@ -246,43 +254,36 @@ export class BattleScreen {
 
     renderActionBar() {
         const bar = document.getElementById('action-bar');
+        const toast = document.getElementById('instruction-toast');
         if (!bar) return;
         const g = this.game;
         const isPlayerTurn = g.isPlayerTurn() && g.phase === PHASES.MAIN;
 
         if (!isPlayerTurn) {
-            bar.innerHTML = '<div class="action-status">⏳ Waiting...</div>';
+            bar.innerHTML = '';
+            if (toast) toast.innerText = '⏳ Waiting for AI...';
+            if (toast) toast.className = 'instruction-toast show';
             return;
         }
 
-        let html = '';
-
-        // Status message for targeting
+        let msg = '';
         if (this.awaitingTarget === 'energy') {
-            html += `<div class="action-status">⚡ Click a Pokémon to attach energy</div>`;
+            msg = '⚡ Select a Pokémon to attach energy';
         } else if (this.awaitingTarget === 'bench') {
-            html += `<div class="action-status">👆 Click a bench slot to place</div>`;
+            msg = '👆 Select a bench slot';
         } else if (this.awaitingTarget === 'evolve') {
-            html += `<div class="action-status">🔄 Click a Pokémon to evolve</div>`;
+            msg = '🔄 Select a Pokémon to evolve';
         } else if (this.awaitingTarget === 'retreat') {
-            html += `<div class="action-status">↩ Click a bench Pokémon to swap</div>`;
+            msg = '↩ Select a bench Pokémon to swap';
         }
 
-        const active = g.player.active;
-
-        // Attack buttons
-        if (active?.attacks) {
-            active.attacks.forEach((atk, i) => {
-                const canUse = g.canAttack(i);
-                const cost = (atk.cost || []).map(c => `<img src="${getEnergyOrbSrc(c)}" alt="${c}">`).join('');
-                html += `<button class="btn btn-sm btn-primary" ${canUse ? '' : 'disabled'} data-attack="${i}">${cost} ${atk.name} ${atk.damage || ''}</button>`;
-            });
+        if (toast) {
+            toast.innerText = msg;
+            toast.className = `instruction-toast ${msg ? 'show' : ''}`;
         }
 
-        // Retreat
-        html += `<button class="btn btn-sm btn-secondary" ${g.canRetreat() ? '' : 'disabled'} id="btn-retreat">↩ Retreat</button>`;
-
-        // End turn
+        let html = '';
+        // Only End Turn in sidebar now
         html += `<button class="btn btn-sm btn-gold" id="btn-end-turn">End Turn ▶</button>`;
 
         if (this.selectedCard) {
@@ -292,12 +293,40 @@ export class BattleScreen {
         bar.innerHTML = html;
 
         // Bind events
-        bar.querySelectorAll('[data-attack]').forEach(btn => {
-            btn.addEventListener('click', () => this.handleAttack(parseInt(btn.dataset.attack)));
-        });
-        bar.querySelector('#btn-retreat')?.addEventListener('click', () => this.handleRetreat());
         bar.querySelector('#btn-end-turn')?.addEventListener('click', () => this.handleEndTurn());
         bar.querySelector('#btn-deselect')?.addEventListener('click', () => { this.selectedCard = null; this.awaitingTarget = null; this.renderBattle(); });
+    }
+
+    handleCardContextMenu(card, type) {
+        // Generate actions if it's player active pokemon and player turn
+        const actions = [];
+        const g = this.game;
+
+        if (g.isPlayerTurn() && g.phase === PHASES.MAIN && type === 'active') {
+            // Attacks
+            if (card.attacks) {
+                card.attacks.forEach((atk, i) => {
+                    const canUse = g.canAttack(i);
+                    const cost = (atk.cost || []).map(c => getEnergyOrbSrc(c)).map(src => `<img src="${src}" style="width:14px;height:14px;vertical-align:middle">`).join('');
+                    actions.push({
+                        label: `${cost} ${atk.name} ${atk.damage || ''}`,
+                        variant: 'primary',
+                        disabled: !canUse,
+                        action: () => this.handleAttack(i)
+                    });
+                });
+            }
+
+            // Retreat
+            actions.push({
+                label: '↩ Retreat',
+                variant: 'secondary',
+                disabled: !g.canRetreat(),
+                action: () => this.handleRetreat()
+            });
+        }
+
+        showCardDetail(card, this.container, null, actions);
     }
 
     handleHandClick(card) {
@@ -331,17 +360,12 @@ export class BattleScreen {
             const result = playTrainer(this.game, this.game.player, card);
             this.selectedCard = null;
             this.renderBattle();
-        } else {
-            // Fallback — show card detail
-            showCardDetail(card, this.container);
         }
+        // Left click no longer opens details
     }
 
     handleActiveClick(card) {
-        if (!this.game.isPlayerTurn()) {
-            showCardDetail(card, this.container);
-            return;
-        }
+        if (!this.game.isPlayerTurn()) return;
 
         // Attach energy to active
         if (this.awaitingTarget === 'energy' && this.selectedCard) {
@@ -357,16 +381,12 @@ export class BattleScreen {
                 this.awaitingTarget = null;
                 this.renderBattle();
             }
-        } else {
-            showCardDetail(card, this.container);
         }
+        // Left click no longer opens details
     }
 
     handleBenchClick(card, benchIndex) {
-        if (!this.game.isPlayerTurn()) {
-            if (card) showCardDetail(card, this.container);
-            return;
-        }
+        if (!this.game.isPlayerTurn()) return;
 
         if (this.awaitingTarget === 'energy' && this.selectedCard) {
             this.game.attachEnergy(this.selectedCard, card);
@@ -385,9 +405,8 @@ export class BattleScreen {
             this.selectedCard = null;
             this.awaitingTarget = null;
             this.renderBattle();
-        } else {
-            if (card) showCardDetail(card, this.container);
         }
+        // Left click no longer opens details
     }
 
     handleEmptyBenchClick(slotIndex) {

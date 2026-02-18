@@ -16,7 +16,7 @@ function getEnergyOrbSrc(type) {
 }
 
 export function createCardElement(card, opts = {}) {
-  const { faceDown = false, showDamage = true, showEnergy = true, showStatus = true, onClick, onDragStart, className = '' } = opts;
+  const { faceDown = false, showDamage = true, showEnergy = true, showStatus = true, onClick, onContextMenu, onDragStart, className = '' } = opts;
   const el = document.createElement('div');
   el.className = `card ${className}`;
   if (card?.status) el.classList.add(`status-${card.status}`);
@@ -92,7 +92,14 @@ export function createCardElement(card, opts = {}) {
     el.appendChild(badges);
   }
 
-  if (onClick) el.addEventListener('click', () => onClick(card));
+  if (onClick) el.addEventListener('click', (e) => onClick(card, e));
+  if (onContextMenu) {
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      onContextMenu(card, e);
+    });
+  }
+
   if (onDragStart) {
     el.draggable = true;
     el.addEventListener('dragstart', (e) => { el.classList.add('dragging'); onDragStart(e, card); });
@@ -109,11 +116,17 @@ export function createCardBack() {
   return el;
 }
 
-export function showCardDetail(card, container, onClose) {
+export function showCardDetail(card, container, onClose, actions = []) {
   const overlay = document.createElement('div');
   overlay.className = 'card-detail-overlay animate-fade-in';
-  // Click ANYWHERE on the overlay (including the image) to close
-  overlay.addEventListener('click', () => { overlay.remove(); onClose?.(); });
+
+  // Close on background click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      onClose?.();
+    }
+  });
 
   const imgSrc = card.images?.large || card.images?.small;
 
@@ -148,13 +161,31 @@ export function showCardDetail(card, container, onClose) {
   const retreatHtml = card.retreatCost?.length ?
     card.retreatCost.map(c => `<img class="energy-orb-icon" src="${getEnergyOrbSrc(c)}" alt="${c}">`).join('') : '';
 
-  overlay.innerHTML = `<div class="card-detail">
+  // Render actions if provided
+  let actionsHtml = '';
+  if (actions && actions.length > 0) {
+    actionsHtml = `<div class="card-actions" style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+      ${actions.map((act, i) => `
+        <button class="btn btn-${act.variant || 'primary'} action-btn" data-idx="${i}" ${act.disabled ? 'disabled' : ''} style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+          ${act.icon ? act.icon : ''} ${act.label}
+        </button>
+      `).join('')}
+    </div>`;
+  }
+
+  overlay.innerHTML = `<div class="card-detail" onclick="event.stopPropagation()">
     ${imgSrc ? `<img class="card-detail-image" src="${imgSrc}" alt="${card.name}" onerror="this.style.display='none'">` : ''}
     <div class="card-detail-info">
-      <h2>${card.name}</h2>
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <h2>${card.name}</h2>
+        <button class="close-btn" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;">×</button>
+      </div>
       <p>${card.supertype}${card.subtypes?.length ? ` — ${card.subtypes.join(', ')}` : ''}</p>
       ${card.hp ? `<p>HP: ${card.hp} ${card.types?.length ? `| Type: ${card.types.join(', ')}` : ''}</p>` : ''}
       ${card.evolvesFrom ? `<p>Evolves from: ${card.evolvesFrom}</p>` : ''}
+      
+      ${actionsHtml}
+      
       ${abilitiesHtml ? `<div class="attack-list">${abilitiesHtml}</div>` : ''}
       ${attacksHtml ? `<div class="attack-list">${attacksHtml}</div>` : ''}
       ${weaknessHtml ? `<p style="margin-top:8px">Weakness: ${weaknessHtml}</p>` : ''}
@@ -164,6 +195,25 @@ export function showCardDetail(card, container, onClose) {
   </div>`;
 
   container.appendChild(overlay);
+
+  // Bind close button
+  overlay.querySelector('.close-btn').addEventListener('click', () => {
+    overlay.remove();
+    onClose?.();
+  });
+
+  // Bind action buttons
+  overlay.querySelectorAll('.action-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      const action = actions[idx];
+      if (action.action) {
+        action.action();
+        overlay.remove();
+        onClose?.();
+      }
+    });
+  });
 }
 
 export { ENERGY_ORB_MAP, getEnergyOrbSrc, STATUS_EMOJI };

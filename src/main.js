@@ -9,6 +9,10 @@ import './ui/settings.css';
 import { renderTitleScreen } from './ui/TitleScreen.js';
 import { SettingsState } from './ui/SettingsState.js';
 import { SettingsUI } from './ui/SettingsUI.js';
+// Disable context menu globally
+window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+
 import { renderDeckBuilder } from './ui/DeckBuilder.js';
 import { BattleScreen } from './ui/BattleScreen.js';
 

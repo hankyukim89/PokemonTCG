@@ -1,13 +1,20 @@
 // Main entry point — screen routing and app init
-import './style.css';
+import './styles/variables.css';
+import './styles/base.css';
+import './styles/layout.css';
+import './styles/components.css';
+import './styles/utilities.css';
 import './ui/settings.css';
+
 import { renderTitleScreen } from './ui/TitleScreen.js';
-import { Settings } from './ui/Settings.js';
+import { SettingsState } from './ui/SettingsState.js';
+import { SettingsUI } from './ui/SettingsUI.js';
 import { renderDeckBuilder } from './ui/DeckBuilder.js';
 import { BattleScreen } from './ui/BattleScreen.js';
 
 // Init settings immediately
-new Settings();
+const settingsState = new SettingsState();
+new SettingsUI(settingsState);
 
 // App state
 const app = document.querySelector('#app');

@@ -1,0 +1,557 @@
+/* ===== TITLE SCREEN ===== */
+.title-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: radial-gradient(ellipse at center, #1a2340 0%, #0a0e1a 70%);
+    position: relative;
+    overflow: hidden;
+}
+
+.title-screen::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(227, 53, 13, 0.05), transparent, rgba(59, 76, 202, 0.05), transparent);
+    animation: titleRotate 20s linear infinite;
+}
+
+@keyframes titleRotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.title-logo {
+    font-size: 64px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--poke-yellow), var(--poke-gold), var(--poke-yellow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 4px 20px rgba(255, 203, 5, 0.3));
+    position: relative;
+    z-index: 1;
+    margin-bottom: 8px;
+}
+
+.title-subtitle {
+    font-size: 20px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 1;
+}
+
+.title-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.title-buttons .btn {
+    min-width: 240px;
+    font-size: 16px;
+    padding: 14px 32px;
+}
+
+/* ===== DECK BUILDER ===== */
+.deck-builder {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.card-pool {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card-pool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.card-pool-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--poke-yellow);
+}
+
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+}
+
+.card-grid-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    aspect-ratio: 5/7;
+}
+
+.card-grid-item:hover {
+    transform: translateY(-4px) scale(1.05);
+    border-color: var(--accent);
+    box-shadow: 0 8px 25px rgba(79, 109, 240, 0.3);
+    z-index: 10;
+}
+
+.card-grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.card-grid-item .card-count {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--poke-red);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.card-grid-item.in-deck {
+    border-color: var(--poke-yellow);
+    box-shadow: 0 0 10px rgba(255, 203, 5, 0.3);
+}
+
+/* Deck Sidebar */
+.deck-sidebar {
+    background: var(--bg-medium);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.deck-sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.deck-sidebar-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.deck-count {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.deck-count span {
+    color: var(--poke-yellow);
+    font-weight: 700;
+}
+
+.deck-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.deck-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    background: var(--bg-surface);
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.deck-list-item:hover {
+    background: var(--bg-elevated);
+}
+
+.deck-list-item .card-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.deck-list-item .card-qty {
+    color: var(--poke-yellow);
+    font-weight: 700;
+    margin: 0 8px;
+}
+
+.deck-list-item .remove-btn {
+    color: var(--text-muted);
+    background: none;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.deck-list-item .remove-btn:hover {
+    color: var(--poke-red);
+    background: rgba(227, 53, 13, 0.1);
+}
+
+.deck-sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preset-decks {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+.preset-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* ===== BATTLEFIELD ===== */
+.battlefield {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 50%, #1a2840 0%, #0d1520 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Felt texture overlay */
+.battlefield::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 50% 0%, rgba(59, 76, 202, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(227, 53, 13, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.battlefield>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* Opponent Side */
+.opponent-side {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 8px;
+}
+
+.opponent-hand {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px;
+}
+
+.opponent-hand .card {
+    width: 48px;
+    height: 67px;
+}
+
+.opponent-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+}
+
+/* Center Field Area (Active Pokémon) */
+.center-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 8px;
+}
+
+.active-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 130px;
+    position: relative;
+}
+
+.active-zone .card {
+    width: var(--card-width-lg);
+    height: var(--card-height-lg);
+}
+
+.bench-zone {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.bench-slot {
+    width: var(--card-width);
+    height: var(--card-height);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--card-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 10px;
+    transition: all 0.2s;
+}
+
+.bench-slot.droppable {
+    border-color: var(--accent);
+    background: rgba(79, 109, 240, 0.1);
+}
+
+.bench-slot.occupied {
+    border: none;
+}
+
+/* Side Piles */
+.side-piles {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 80px;
+}
+
+.pile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.pile-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.pile-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.pile-card {
+    width: 80px;
+    height: 112px;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pile-card.face-down {
+    background: linear-gradient(135deg, #3B4CCA, #1a2340);
+    border: 2px solid #4a5cda;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.pile-card.face-down img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Prize cards in a 2x3 grid */
+.prize-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+}
+
+.prize-card {
+    width: 50px;
+    height: 70px;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+.prize-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.prize-card.collected {
+    opacity: 0.2;
+    transform: scale(0.8);
+}
+
+/* Center Area — Divider */
+.center-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 16px;
+    position: relative;
+}
+
+.center-divider::before {
+    content: '';
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+}
+
+.turn-indicator {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    z-index: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.turn-indicator.your-turn {
+    border-color: var(--success);
+    color: var(--success);
+    box-shadow: 0 0 12px rgba(72, 199, 116, 0.2);
+}
+
+.turn-indicator.opp-turn {
+    border-color: var(--poke-red);
+    color: var(--poke-red);
+}
+
+/* Player Side */
+.player-side {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 8px;
+}
+
+.player-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+}
+
+.player-hand {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    min-height: 100px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Hand cards — fan effect */
+.player-hand .card {
+    margin: 0 -6px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.player-hand .card:hover {
+    transform: translateY(-20px) scale(1.15);
+    z-index: 100;
+}
+
+.player-hand .card.dragging {
+    opacity: 0.5;
+    transform: scale(0.9);
+}
+
+.player-hand .card.selected {
+    transform: translateY(-20px);
+    box-shadow: 0 0 20px var(--accent-glow);
+    outline: 2px solid var(--accent);
+    border-radius: var(--card-radius);
+}

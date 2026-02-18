@@ -1,0 +1,144 @@
+/* ===== SETTINGS UI ===== */
+#settings-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(10, 14, 26, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.2s;
+}
+
+#settings-btn:hover {
+    background: var(--bg-surface);
+    color: var(--poke-yellow);
+    transform: rotate(90deg);
+}
+
+#custom-bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    transition: background-image 0.5s ease-in-out, opacity 0.3s;
+}
+
+#app {
+    position: relative;
+    z-index: 1;
+}
+
+#settings-modal {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+#settings-modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.settings-popup {
+    width: 100%;
+    max-width: 400px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--poke-yellow);
+}
+
+#close-settings {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    line-height: .8;
+}
+
+#close-settings:hover {
+    color: var(--text-primary);
+}
+
+.setting-group {
+    margin-bottom: 24px;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+#bg-opacity {
+    width: 100%;
+    margin-top: 8px;
+    accent-color: var(--poke-yellow);
+}
+
+#file-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}

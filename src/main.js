@@ -1,8 +1,16 @@
 // Main entry point — screen routing and app init
 import './style.css';
+import './ui/settings.css';
 import { renderTitleScreen } from './ui/TitleScreen.js';
+import { Settings } from './ui/Settings.js';
 import { renderDeckBuilder } from './ui/DeckBuilder.js';
 import { BattleScreen } from './ui/BattleScreen.js';
+
+// Init settings immediately
+new Settings();
+
+// App state
+const app = document.querySelector('#app');
 
 let allCards = [];
 let currentBattle = null;

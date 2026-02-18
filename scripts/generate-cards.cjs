@@ -1,0 +1,448 @@
+// Generate Base Set card data locally (API is down)
+const fs = require('fs');
+const path = require('path');
+
+const pokemon = [
+    {
+        id: "base1-1", name: "Alakazam", hp: 80, types: ["Psychic"], subtypes: ["Stage 2"], evolvesFrom: "Kadabra",
+        abilities: [{ name: "Damage Swap", text: "As often as you like during your turn, you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon.", type: "Pokémon Power" }],
+        attacks: [{ name: "Confuse Ray", cost: ["Psychic", "Psychic", "Psychic"], convertedEnergyCost: 3, damage: "30", text: "Flip a coin. If heads, the Defending Pokémon is now Confused." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "1", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-2", name: "Blastoise", hp: 100, types: ["Water"], subtypes: ["Stage 2"], evolvesFrom: "Wartortle",
+        abilities: [{ name: "Rain Dance", text: "As often as you like during your turn, you may attach 1 Water Energy card to 1 of your Water Pokémon.", type: "Pokémon Power" }],
+        attacks: [{ name: "Hydro Pump", cost: ["Water", "Water", "Water"], convertedEnergyCost: 3, damage: "40", text: "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "2", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-3", name: "Chansey", hp: 120, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Scrunch", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Chansey during your opponent's next turn." }, { name: "Double-edge", cost: ["Colorless", "Colorless", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "80", text: "Chansey does 80 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless"], number: "3", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-4", name: "Charizard", hp: 120, types: ["Fire"], subtypes: ["Stage 2"], evolvesFrom: "Charmeleon",
+        abilities: [{ name: "Energy Burn", text: "As often as you like during your turn, you may turn all Energy attached to Charizard into Fire Energy.", type: "Pokémon Power" }],
+        attacks: [{ name: "Fire Spin", cost: ["Fire", "Fire", "Fire", "Fire"], convertedEnergyCost: 4, damage: "100", text: "Discard 2 Energy cards attached to Charizard." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "4", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-5", name: "Clefairy", hp: 40, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Sing", cost: ["Colorless"], convertedEnergyCost: 1, damage: "", text: "Flip a coin. If heads, the Defending Pokémon is now Asleep." }, { name: "Metronome", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "", text: "Choose 1 of the Defending Pokémon's attacks. Metronome copies that attack." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless"], number: "5", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-6", name: "Gyarados", hp: 100, types: ["Water"], subtypes: ["Stage 1"], evolvesFrom: "Magikarp",
+        attacks: [{ name: "Dragon Rage", cost: ["Water", "Water", "Water"], convertedEnergyCost: 3, damage: "50", text: "" }, { name: "Bubblebeam", cost: ["Water", "Water", "Water", "Water"], convertedEnergyCost: 4, damage: "40", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "6", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-7", name: "Hitmonchan", hp: 70, types: ["Fighting"], subtypes: ["Basic"],
+        attacks: [{ name: "Jab", cost: ["Fighting"], convertedEnergyCost: 1, damage: "20", text: "" }, { name: "Special Punch", cost: ["Fighting", "Fighting", "Colorless"], convertedEnergyCost: 3, damage: "40", text: "" }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "7", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-8", name: "Machamp", hp: 100, types: ["Fighting"], subtypes: ["Stage 2"], evolvesFrom: "Machoke",
+        attacks: [{ name: "Seismic Toss", cost: ["Fighting", "Fighting", "Fighting", "Colorless"], convertedEnergyCost: 4, damage: "60", text: "" }, { name: "Strike Back", cost: ["Fighting", "Fighting"], convertedEnergyCost: 2, damage: "20", text: "If Machamp has any damage counters on it, this attack does 20 damage plus 10 more damage." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "8", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-9", name: "Magneton", hp: 60, types: ["Lightning"], subtypes: ["Stage 1"], evolvesFrom: "Magnemite",
+        attacks: [{ name: "Thunder Wave", cost: ["Lightning", "Lightning", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }, { name: "Selfdestruct", cost: ["Lightning", "Lightning", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "80", text: "Does 20 damage to each Pokémon on each player's Bench. Magneton does 80 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "9", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-10", name: "Mewtwo", hp: 60, types: ["Psychic"], subtypes: ["Basic"],
+        attacks: [{ name: "Psychic", cost: ["Psychic", "Colorless"], convertedEnergyCost: 2, damage: "10", text: "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon." }, { name: "Barrier", cost: ["Psychic", "Psychic"], convertedEnergyCost: 2, damage: "", text: "Discard 1 Psychic Energy card attached to Mewtwo. During your opponent's next turn, prevent all effects of attacks, including damage, done to Mewtwo." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "10", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-11", name: "Nidoking", hp: 90, types: ["Grass"], subtypes: ["Stage 2"], evolvesFrom: "Nidorino",
+        attacks: [{ name: "Thrash", cost: ["Grass", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Flip a coin. If heads, this attack does 30 damage plus 10 more damage. If tails, this attack does nothing." }, { name: "Toxic", cost: ["Grass", "Grass", "Grass"], convertedEnergyCost: 3, damage: "20", text: "The Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "11", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-12", name: "Ninetales", hp: 80, types: ["Fire"], subtypes: ["Stage 1"], evolvesFrom: "Vulpix",
+        attacks: [{ name: "Lure", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "", text: "If your opponent has any Benched Pokémon, choose 1 of them and switch it with the Defending Pokémon." }, { name: "Fire Blast", cost: ["Fire", "Fire", "Fire", "Fire"], convertedEnergyCost: 4, damage: "80", text: "Discard 1 Fire Energy card attached to Ninetales." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "12", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-13", name: "Poliwrath", hp: 90, types: ["Water"], subtypes: ["Stage 2"], evolvesFrom: "Poliwhirl",
+        attacks: [{ name: "Water Gun", cost: ["Water", "Water", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Does 30 damage plus 10 more damage for each Water Energy attached." }, { name: "Whirlpool", cost: ["Water", "Water", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "40", text: "If the Defending Pokémon has any Energy cards attached, choose 1 and discard it." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "13", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-14", name: "Raichu", hp: 80, types: ["Lightning"], subtypes: ["Stage 1"], evolvesFrom: "Pikachu",
+        attacks: [{ name: "Agility", cost: ["Lightning", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "20", text: "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage." }, { name: "Thunder", cost: ["Lightning", "Lightning", "Lightning", "Colorless"], convertedEnergyCost: 4, damage: "60", text: "Flip a coin. If tails, Raichu does 30 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "14", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-15", name: "Venusaur", hp: 100, types: ["Grass"], subtypes: ["Stage 2"], evolvesFrom: "Ivysaur",
+        abilities: [{ name: "Energy Trans", text: "As often as you like during your turn, you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one.", type: "Pokémon Power" }],
+        attacks: [{ name: "Solarbeam", cost: ["Grass", "Grass", "Grass", "Grass"], convertedEnergyCost: 4, damage: "60", text: "" }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "15", rarity: "Rare Holo"
+    },
+    {
+        id: "base1-16", name: "Zapdos", hp: 90, types: ["Lightning"], subtypes: ["Basic"],
+        attacks: [{ name: "Thunder", cost: ["Lightning", "Lightning", "Lightning", "Colorless"], convertedEnergyCost: 4, damage: "60", text: "Flip a coin. If tails, Zapdos does 30 damage to itself." }, { name: "Thunderbolt", cost: ["Lightning", "Lightning", "Lightning", "Lightning"], convertedEnergyCost: 4, damage: "100", text: "Discard all Energy cards attached to Zapdos." }],
+        weaknesses: [], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "16", rarity: "Rare Holo"
+    },
+
+    // Uncommon/Common Pokémon
+    {
+        id: "base1-17", name: "Beedrill", hp: 80, types: ["Grass"], subtypes: ["Stage 2"], evolvesFrom: "Kakuna",
+        attacks: [{ name: "Twineedle", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Flip 2 coins. This attack does 30 damage times the number of heads." }, { name: "Poison Sting", cost: ["Grass", "Grass", "Grass"], convertedEnergyCost: 3, damage: "40", text: "Flip a coin. If heads, the Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: [], number: "17", rarity: "Rare"
+    },
+    {
+        id: "base1-18", name: "Dragonair", hp: 80, types: ["Colorless"], subtypes: ["Stage 1"], evolvesFrom: "Dratini",
+        attacks: [{ name: "Slam", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Flip 2 coins. This attack does 30 damage times the number of heads." }, { name: "Hyper Beam", cost: ["Colorless", "Colorless", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "20", text: "If the Defending Pokémon has any Energy cards attached, choose 1 and discard it." }],
+        weaknesses: [], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless", "Colorless"], number: "18", rarity: "Rare"
+    },
+    {
+        id: "base1-19", name: "Dugtrio", hp: 70, types: ["Fighting"], subtypes: ["Stage 1"], evolvesFrom: "Diglett",
+        attacks: [{ name: "Slash", cost: ["Fighting", "Fighting", "Colorless"], convertedEnergyCost: 3, damage: "40", text: "" }, { name: "Earthquake", cost: ["Fighting", "Fighting", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "70", text: "Does 10 damage to each of your own Benched Pokémon." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [{ type: "Lightning", value: "-30" }], retreatCost: ["Colorless", "Colorless"], number: "19", rarity: "Rare"
+    },
+    {
+        id: "base1-20", name: "Electabuzz", hp: 70, types: ["Lightning"], subtypes: ["Basic"],
+        attacks: [{ name: "Thundershock", cost: ["Lightning"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }, { name: "Thunderpunch", cost: ["Lightning", "Colorless"], convertedEnergyCost: 2, damage: "30", text: "Flip a coin. If heads, this attack does 30 damage plus 10 more damage. If tails, this attack does 30 damage and Electabuzz does 10 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "20", rarity: "Rare"
+    },
+    {
+        id: "base1-21", name: "Electrode", hp: 80, types: ["Lightning"], subtypes: ["Stage 1"], evolvesFrom: "Voltorb",
+        attacks: [{ name: "Tackle", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "" }, { name: "Electric Shock", cost: ["Lightning", "Lightning", "Lightning"], convertedEnergyCost: 3, damage: "50", text: "Flip a coin. If tails, Electrode does 10 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "21", rarity: "Rare"
+    },
+    {
+        id: "base1-22", name: "Pidgeotto", hp: 60, types: ["Colorless"], subtypes: ["Stage 1"], evolvesFrom: "Pidgey",
+        attacks: [{ name: "Whirlwind", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "If your opponent has any Benched Pokémon, he or she chooses 1 of them and switches it with the Defending Pokémon." }, { name: "Mirror Move", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "", text: "If Pidgeotto was attacked last turn, do the final result of that attack on the Defending Pokémon." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless"], number: "22", rarity: "Rare"
+    },
+    {
+        id: "base1-23", name: "Arcanine", hp: 100, types: ["Fire"], subtypes: ["Stage 1"], evolvesFrom: "Growlithe",
+        attacks: [{ name: "Flamethrower", cost: ["Fire", "Fire", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "Discard 1 Fire Energy card attached to Arcanine." }, { name: "Take Down", cost: ["Fire", "Fire", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "80", text: "Arcanine does 30 damage to itself." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "23", rarity: "Uncommon"
+    },
+    {
+        id: "base1-24", name: "Charmeleon", hp: 80, types: ["Fire"], subtypes: ["Stage 1"], evolvesFrom: "Charmander",
+        attacks: [{ name: "Slash", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "" }, { name: "Flamethrower", cost: ["Fire", "Fire", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "Discard 1 Fire Energy card attached to Charmeleon." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "24", rarity: "Uncommon"
+    },
+    {
+        id: "base1-25", name: "Dewgong", hp: 80, types: ["Water"], subtypes: ["Stage 1"], evolvesFrom: "Seel",
+        attacks: [{ name: "Aurora Beam", cost: ["Water", "Water", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "" }, { name: "Ice Beam", cost: ["Water", "Water", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "30", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "25", rarity: "Uncommon"
+    },
+    {
+        id: "base1-26", name: "Dratini", hp: 40, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Pound", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }],
+        weaknesses: [], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless"], number: "26", rarity: "Uncommon"
+    },
+    {
+        id: "base1-27", name: "Farfetch'd", hp: 50, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Leek Slap", cost: ["Colorless"], convertedEnergyCost: 1, damage: "30", text: "Flip a coin. If tails, this attack does nothing." }, { name: "Pot Smash", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "" }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless"], number: "27", rarity: "Uncommon"
+    },
+    {
+        id: "base1-28", name: "Growlithe", hp: 60, types: ["Fire"], subtypes: ["Basic"],
+        attacks: [{ name: "Flare", cost: ["Fire", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "" }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "28", rarity: "Uncommon"
+    },
+    {
+        id: "base1-29", name: "Haunter", hp: 60, types: ["Psychic"], subtypes: ["Stage 1"], evolvesFrom: "Gastly",
+        attacks: [{ name: "Hypnosis", cost: ["Psychic"], convertedEnergyCost: 1, damage: "", text: "The Defending Pokémon is now Asleep." }, { name: "Dream Eater", cost: ["Psychic", "Psychic"], convertedEnergyCost: 2, damage: "50", text: "You can't use this attack unless the Defending Pokémon is Asleep." }],
+        weaknesses: [], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless"], number: "29", rarity: "Uncommon"
+    },
+    {
+        id: "base1-30", name: "Ivysaur", hp: 60, types: ["Grass"], subtypes: ["Stage 1"], evolvesFrom: "Bulbasaur",
+        attacks: [{ name: "Vine Whip", cost: ["Grass", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "" }, { name: "Poisonpowder", cost: ["Grass", "Grass", "Grass"], convertedEnergyCost: 3, damage: "20", text: "The Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "30", rarity: "Uncommon"
+    },
+    {
+        id: "base1-31", name: "Jynx", hp: 70, types: ["Psychic"], subtypes: ["Basic"],
+        attacks: [{ name: "Doubleslap", cost: ["Psychic"], convertedEnergyCost: 1, damage: "10", text: "Flip 2 coins. This attack does 10 damage times the number of heads." }, { name: "Meditate", cost: ["Psychic", "Psychic", "Colorless"], convertedEnergyCost: 3, damage: "20", text: "Does 20 damage plus 10 more damage for each damage counter on the Defending Pokémon." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "31", rarity: "Uncommon"
+    },
+    {
+        id: "base1-32", name: "Kadabra", hp: 60, types: ["Psychic"], subtypes: ["Stage 1"], evolvesFrom: "Abra",
+        attacks: [{ name: "Recover", cost: ["Psychic", "Psychic"], convertedEnergyCost: 2, damage: "", text: "Discard 1 Psychic Energy card attached to Kadabra. Remove all damage counters from Kadabra." }, { name: "Super Psy", cost: ["Psychic", "Psychic", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "" }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "32", rarity: "Uncommon"
+    },
+    {
+        id: "base1-33", name: "Kakuna", hp: 80, types: ["Grass"], subtypes: ["Stage 1"], evolvesFrom: "Weedle",
+        attacks: [{ name: "Stiffen", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Kakuna during your opponent's next turn." }, { name: "Poisonpowder", cost: ["Grass", "Grass"], convertedEnergyCost: 2, damage: "20", text: "Flip a coin. If heads, the Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "33", rarity: "Uncommon"
+    },
+    {
+        id: "base1-34", name: "Machoke", hp: 80, types: ["Fighting"], subtypes: ["Stage 1"], evolvesFrom: "Machop",
+        attacks: [{ name: "Karate Chop", cost: ["Fighting", "Fighting", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "Does 50 damage minus 10 damage for each damage counter on Machoke." }, { name: "Submission", cost: ["Fighting", "Fighting", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "60", text: "Machoke does 20 damage to itself." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "34", rarity: "Uncommon"
+    },
+    {
+        id: "base1-35", name: "Magikarp", hp: 30, types: ["Water"], subtypes: ["Basic"],
+        attacks: [{ name: "Tackle", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Flail", cost: ["Water"], convertedEnergyCost: 1, damage: "10", text: "Does 10 damage times the number of damage counters on Magikarp." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "35", rarity: "Uncommon"
+    },
+    {
+        id: "base1-36", name: "Magmar", hp: 50, types: ["Fire"], subtypes: ["Basic"],
+        attacks: [{ name: "Fire Punch", cost: ["Fire", "Fire"], convertedEnergyCost: 2, damage: "30", text: "" }, { name: "Flamethrower", cost: ["Fire", "Fire", "Colorless"], convertedEnergyCost: 3, damage: "50", text: "Discard 1 Fire Energy card attached to Magmar." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "36", rarity: "Uncommon"
+    },
+    {
+        id: "base1-37", name: "Nidorino", hp: 60, types: ["Grass"], subtypes: ["Stage 1"], evolvesFrom: "Nidoran♂",
+        attacks: [{ name: "Horn Drill", cost: ["Grass", "Grass", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "" }, { name: "Poison Sting", cost: ["Grass", "Grass", "Colorless", "Colorless"], convertedEnergyCost: 4, damage: "20", text: "Flip a coin. If heads, the Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "37", rarity: "Uncommon"
+    },
+    {
+        id: "base1-38", name: "Poliwhirl", hp: 60, types: ["Water"], subtypes: ["Stage 1"], evolvesFrom: "Poliwag",
+        attacks: [{ name: "Amnesia", cost: ["Water", "Water"], convertedEnergyCost: 2, damage: "", text: "Choose 1 of the Defending Pokémon's attacks. That Pokémon can't use that attack during your opponent's next turn." }, { name: "Doubleslap", cost: ["Water", "Water", "Colorless"], convertedEnergyCost: 3, damage: "30", text: "Flip 2 coins. This attack does 30 damage times the number of heads." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "38", rarity: "Uncommon"
+    },
+    {
+        id: "base1-39", name: "Porygon", hp: 30, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Conversion 1", cost: ["Colorless"], convertedEnergyCost: 1, damage: "", text: "If the Defending Pokémon has a Weakness, you may change it to a type of your choice other than Colorless." }, { name: "Conversion 2", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Change Porygon's Resistance to a type of your choice other than Colorless." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless"], number: "39", rarity: "Uncommon"
+    },
+    {
+        id: "base1-40", name: "Raticate", hp: 60, types: ["Colorless"], subtypes: ["Stage 1"], evolvesFrom: "Rattata",
+        attacks: [{ name: "Bite", cost: ["Colorless"], convertedEnergyCost: 1, damage: "20", text: "" }, { name: "Super Fang", cost: ["Colorless", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "", text: "Does damage to the Defending Pokémon equal to half the Defending Pokémon's remaining HP (rounded up to the nearest 10)." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: ["Colorless"], number: "40", rarity: "Uncommon"
+    },
+    {
+        id: "base1-41", name: "Seel", hp: 60, types: ["Water"], subtypes: ["Basic"],
+        attacks: [{ name: "Headbutt", cost: ["Water"], convertedEnergyCost: 1, damage: "10", text: "" }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "41", rarity: "Uncommon"
+    },
+    {
+        id: "base1-42", name: "Wartortle", hp: 70, types: ["Water"], subtypes: ["Stage 1"], evolvesFrom: "Squirtle",
+        attacks: [{ name: "Withdraw", cost: ["Water", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Wartortle during your opponent's next turn." }, { name: "Bite", cost: ["Water", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "40", text: "" }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "42", rarity: "Uncommon"
+    },
+
+    // Common Pokémon
+    {
+        id: "base1-43", name: "Abra", hp: 30, types: ["Psychic"], subtypes: ["Basic"],
+        attacks: [{ name: "Psyshock", cost: ["Psychic"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: [], number: "43", rarity: "Common"
+    },
+    {
+        id: "base1-44", name: "Bulbasaur", hp: 40, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "Leech Seed", cost: ["Grass", "Grass"], convertedEnergyCost: 2, damage: "20", text: "Unless all damage from this attack is prevented, you may remove 1 damage counter from Bulbasaur." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "44", rarity: "Common"
+    },
+    {
+        id: "base1-45", name: "Caterpie", hp: 40, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "String Shot", cost: ["Grass"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "45", rarity: "Common"
+    },
+    {
+        id: "base1-46", name: "Charmander", hp: 50, types: ["Fire"], subtypes: ["Basic"],
+        attacks: [{ name: "Scratch", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Ember", cost: ["Fire", "Colorless"], convertedEnergyCost: 2, damage: "30", text: "Discard 1 Fire Energy card attached to Charmander." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "46", rarity: "Common"
+    },
+    {
+        id: "base1-47", name: "Diglett", hp: 30, types: ["Fighting"], subtypes: ["Basic"],
+        attacks: [{ name: "Dig", cost: ["Fighting"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Mud Slap", cost: ["Fighting", "Fighting"], convertedEnergyCost: 2, damage: "30", text: "" }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [{ type: "Lightning", value: "-30" }], retreatCost: [], number: "47", rarity: "Common"
+    },
+    {
+        id: "base1-48", name: "Doduo", hp: 50, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Fury Attack", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "Flip 2 coins. This attack does 10 damage times the number of heads." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: [], number: "48", rarity: "Common"
+    },
+    {
+        id: "base1-49", name: "Drowzee", hp: 50, types: ["Psychic"], subtypes: ["Basic"],
+        attacks: [{ name: "Pound", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Confuse Ray", cost: ["Psychic", "Psychic"], convertedEnergyCost: 2, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Confused." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "49", rarity: "Common"
+    },
+    {
+        id: "base1-50", name: "Gastly", hp: 30, types: ["Psychic"], subtypes: ["Basic"],
+        attacks: [{ name: "Sleeping Gas", cost: ["Psychic"], convertedEnergyCost: 1, damage: "", text: "Flip a coin. If heads, the Defending Pokémon is now Asleep." }, { name: "Destiny Bond", cost: ["Psychic", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Discard 1 Psychic Energy card attached to Gastly. If Gastly is Knocked Out during your opponent's next turn, the Defending Pokémon that Knocked Out Gastly is also Knocked Out." }],
+        weaknesses: [], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: [], number: "50", rarity: "Common"
+    },
+    {
+        id: "base1-51", name: "Koffing", hp: 50, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "Foul Gas", cost: ["Grass", "Colorless"], convertedEnergyCost: 2, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Poisoned. If tails, it is now Confused." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "51", rarity: "Common"
+    },
+    {
+        id: "base1-52", name: "Machop", hp: 50, types: ["Fighting"], subtypes: ["Basic"],
+        attacks: [{ name: "Low Kick", cost: ["Fighting"], convertedEnergyCost: 1, damage: "20", text: "" }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "52", rarity: "Common"
+    },
+    {
+        id: "base1-53", name: "Magnemite", hp: 40, types: ["Lightning"], subtypes: ["Basic"],
+        attacks: [{ name: "Thunder Wave", cost: ["Lightning"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }, { name: "Selfdestruct", cost: ["Lightning", "Colorless"], convertedEnergyCost: 2, damage: "40", text: "Does 10 damage to each Pokémon on each player's Bench. Magnemite does 40 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "53", rarity: "Common"
+    },
+    {
+        id: "base1-55", name: "Nidoran♂", hp: 50, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "Horn Hazard", cost: ["Grass"], convertedEnergyCost: 1, damage: "30", text: "Flip a coin. If tails, this attack does nothing." }],
+        weaknesses: [{ type: "Psychic", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "55", rarity: "Common"
+    },
+    {
+        id: "base1-56", name: "Onix", hp: 90, types: ["Fighting"], subtypes: ["Basic"],
+        attacks: [{ name: "Rock Throw", cost: ["Fighting"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Harden", cost: ["Fighting", "Fighting"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Onix during your opponent's next turn." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless", "Colorless"], number: "56", rarity: "Common"
+    },
+    {
+        id: "base1-54", name: "Metapod", hp: 70, types: ["Grass"], subtypes: ["Stage 1"], evolvesFrom: "Caterpie",
+        attacks: [{ name: "Stiffen", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Metapod during your opponent's next turn." }, { name: "Stun Spore", cost: ["Grass", "Grass"], convertedEnergyCost: 2, damage: "20", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "54", rarity: "Common"
+    },
+    {
+        id: "base1-57", name: "Pidgey", hp: 40, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Whirlwind", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "If your opponent has any Benched Pokémon, he or she chooses 1 of them and switches it with the Defending Pokémon." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [{ type: "Fighting", value: "-30" }], retreatCost: ["Colorless"], number: "57", rarity: "Common"
+    },
+    {
+        id: "base1-58", name: "Pikachu", hp: 40, types: ["Lightning"], subtypes: ["Basic"],
+        attacks: [{ name: "Gnaw", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }, { name: "Thunder Jolt", cost: ["Lightning", "Colorless"], convertedEnergyCost: 2, damage: "30", text: "Flip a coin. If tails, Pikachu does 10 damage to itself." }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "58", rarity: "Common"
+    },
+    {
+        id: "base1-59", name: "Poliwag", hp: 40, types: ["Water"], subtypes: ["Basic"],
+        attacks: [{ name: "Water Gun", cost: ["Water"], convertedEnergyCost: 1, damage: "10", text: "Does 10 damage plus 10 more damage for each Water Energy attached to Poliwag." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "59", rarity: "Common"
+    },
+    {
+        id: "base1-60", name: "Ponyta", hp: 40, types: ["Fire"], subtypes: ["Basic"],
+        attacks: [{ name: "Smash Kick", cost: ["Colorless", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "" }, { name: "Flame Tail", cost: ["Fire", "Colorless"], convertedEnergyCost: 2, damage: "30", text: "" }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "60", rarity: "Common"
+    },
+    {
+        id: "base1-61", name: "Rattata", hp: 30, types: ["Colorless"], subtypes: ["Basic"],
+        attacks: [{ name: "Bite", cost: ["Colorless"], convertedEnergyCost: 1, damage: "20", text: "" }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [{ type: "Psychic", value: "-30" }], retreatCost: [], number: "61", rarity: "Common"
+    },
+    {
+        id: "base1-62", name: "Sandshrew", hp: 40, types: ["Fighting"], subtypes: ["Basic"],
+        attacks: [{ name: "Sand-attack", cost: ["Fighting"], convertedEnergyCost: 1, damage: "10", text: "If the Defending Pokémon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing." }],
+        weaknesses: [{ type: "Grass", value: "×2" }], resistances: [{ type: "Lightning", value: "-30" }], retreatCost: ["Colorless"], number: "62", rarity: "Common"
+    },
+    {
+        id: "base1-63", name: "Squirtle", hp: 40, types: ["Water"], subtypes: ["Basic"],
+        attacks: [{ name: "Bubble", cost: ["Water"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }, { name: "Withdraw", cost: ["Water", "Colorless"], convertedEnergyCost: 2, damage: "", text: "Flip a coin. If heads, prevent all damage done to Squirtle during your opponent's next turn." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "63", rarity: "Common"
+    },
+    {
+        id: "base1-64", name: "Starmie", hp: 60, types: ["Water"], subtypes: ["Stage 1"], evolvesFrom: "Staryu",
+        attacks: [{ name: "Recover", cost: ["Water", "Water"], convertedEnergyCost: 2, damage: "", text: "Discard 1 Water Energy card attached to Starmie. Remove all damage counters from Starmie." }, { name: "Star Freeze", cost: ["Water", "Colorless", "Colorless"], convertedEnergyCost: 3, damage: "20", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "64", rarity: "Common"
+    },
+    {
+        id: "base1-65", name: "Staryu", hp: 40, types: ["Water"], subtypes: ["Basic"],
+        attacks: [{ name: "Slap", cost: ["Water"], convertedEnergyCost: 1, damage: "20", text: "" }],
+        weaknesses: [{ type: "Lightning", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "65", rarity: "Common"
+    },
+    {
+        id: "base1-66", name: "Tangela", hp: 50, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "Bind", cost: ["Grass", "Colorless"], convertedEnergyCost: 2, damage: "20", text: "Flip a coin. If heads, the Defending Pokémon is now Paralyzed." }, { name: "Poisonpowder", cost: ["Grass", "Grass", "Grass"], convertedEnergyCost: 3, damage: "20", text: "The Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless", "Colorless"], number: "66", rarity: "Common"
+    },
+    {
+        id: "base1-67", name: "Voltorb", hp: 40, types: ["Lightning"], subtypes: ["Basic"],
+        attacks: [{ name: "Tackle", cost: ["Colorless"], convertedEnergyCost: 1, damage: "10", text: "" }],
+        weaknesses: [{ type: "Fighting", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "67", rarity: "Common"
+    },
+    {
+        id: "base1-68", name: "Vulpix", hp: 50, types: ["Fire"], subtypes: ["Basic"],
+        attacks: [{ name: "Confuse Ray", cost: ["Fire", "Fire"], convertedEnergyCost: 2, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Confused." }],
+        weaknesses: [{ type: "Water", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "68", rarity: "Common"
+    },
+    {
+        id: "base1-69", name: "Weedle", hp: 40, types: ["Grass"], subtypes: ["Basic"],
+        attacks: [{ name: "Poison Sting", cost: ["Grass"], convertedEnergyCost: 1, damage: "10", text: "Flip a coin. If heads, the Defending Pokémon is now Poisoned." }],
+        weaknesses: [{ type: "Fire", value: "×2" }], resistances: [], retreatCost: ["Colorless"], number: "69", rarity: "Common"
+    },
+];
+
+const trainers = [
+    { id: "base1-71", name: "Bill", subtypes: ["Item"], number: "91", rarity: "Common" },
+    { id: "base1-72", name: "Energy Removal", subtypes: ["Item"], number: "92", rarity: "Common" },
+    { id: "base1-73", name: "Gust of Wind", subtypes: ["Item"], number: "93", rarity: "Common" },
+    { id: "base1-74", name: "Potion", subtypes: ["Item"], number: "94", rarity: "Common" },
+    { id: "base1-75", name: "Switch", subtypes: ["Item"], number: "95", rarity: "Common" },
+    { id: "base1-76", name: "Computer Search", subtypes: ["Item"], number: "71", rarity: "Rare" },
+    { id: "base1-77", name: "Defender", subtypes: ["Item"], number: "80", rarity: "Uncommon" },
+    { id: "base1-78", name: "Devolution Spray", subtypes: ["Item"], number: "72", rarity: "Rare" },
+    { id: "base1-79", name: "Full Heal", subtypes: ["Item"], number: "82", rarity: "Uncommon" },
+    { id: "base1-80", name: "Item Finder", subtypes: ["Item"], number: "74", rarity: "Rare" },
+    { id: "base1-81", name: "Lass", subtypes: ["Item"], number: "75", rarity: "Rare" },
+    { id: "base1-82", name: "Maintenance", subtypes: ["Item"], number: "83", rarity: "Uncommon" },
+    { id: "base1-83", name: "PlusPower", subtypes: ["Item"], number: "84", rarity: "Uncommon" },
+    { id: "base1-84", name: "Pokémon Breeder", subtypes: ["Item"], number: "76", rarity: "Rare" },
+    { id: "base1-85", name: "Pokémon Center", subtypes: ["Item"], number: "85", rarity: "Uncommon" },
+    { id: "base1-86", name: "Pokémon Trader", subtypes: ["Item"], number: "77", rarity: "Rare" },
+    { id: "base1-87", name: "Professor Oak", subtypes: ["Item"], number: "88", rarity: "Uncommon" },
+    { id: "base1-88", name: "Revive", subtypes: ["Item"], number: "89", rarity: "Uncommon" },
+    { id: "base1-89", name: "Scoop Up", subtypes: ["Item"], number: "78", rarity: "Rare" },
+    { id: "base1-90", name: "Super Energy Removal", subtypes: ["Item"], number: "79", rarity: "Rare" },
+    { id: "base1-91", name: "Super Potion", subtypes: ["Item"], number: "90", rarity: "Uncommon" },
+    { id: "base1-92", name: "Imposter Professor Oak", subtypes: ["Item"], number: "73", rarity: "Rare" },
+    { id: "base1-93", name: "Clefairy Doll", subtypes: ["Item"], number: "70", rarity: "Rare" },
+];
+
+// Energy cards — official Base Set numbering: 96=DCE, 97=Fighting, 98=Fire, 99=Grass, 100=Lightning, 101=Psychic, 102=Water
+const energyData = [
+    { type: "Fighting", number: "97" },
+    { type: "Fire", number: "98" },
+    { type: "Grass", number: "99" },
+    { type: "Lightning", number: "100" },
+    { type: "Psychic", number: "101" },
+    { type: "Water", number: "102" },
+    { type: "Colorless", number: "96" }
+];
+const energy = energyData.map((e, i) => ({
+    id: `base1-${e.number}`,
+    name: `${e.type} Energy`,
+    supertype: "Energy",
+    subtypes: ["Basic"],
+    types: [e.type],
+    number: e.number,
+    rarity: "Common",
+    images: {
+        small: `https://images.pokemontcg.io/base1/${e.number}.png`,
+        large: `https://images.pokemontcg.io/base1/${e.number}_hires.png`
+    }
+}));
+// Add Double Colorless Energy
+energy.push({
+    id: "base1-96", name: "Double Colorless Energy", supertype: "Energy",
+    subtypes: ["Special"], types: ["Colorless"], number: "96", rarity: "Uncommon",
+    images: {
+        small: `https://images.pokemontcg.io/base1/96.png`,
+        large: `https://images.pokemontcg.io/base1/96_hires.png`
+    }
+});
+
+// Process pokemon
+const processedPkmn = pokemon.map(p => ({
+    ...p,
+    supertype: "Pokémon",
+    abilities: p.abilities || [],
+    evolvesFrom: p.evolvesFrom || null,
+    evolvesTo: [],
+    convertedRetreatCost: p.retreatCost.length,
+    images: { small: `https://images.pokemontcg.io/base1/${p.number}.png`, large: `https://images.pokemontcg.io/base1/${p.number}_hires.png` }
+}));
+
+// Process trainers
+const processedTrainers = trainers.map(t => ({
+    ...t,
+    supertype: "Trainer",
+    hp: null, types: [], abilities: [], attacks: [],
+    weaknesses: [], resistances: [], retreatCost: [],
+    evolvesFrom: null, evolvesTo: [],
+    convertedRetreatCost: 0,
+    images: { small: `https://images.pokemontcg.io/base1/${t.number}.png`, large: `https://images.pokemontcg.io/base1/${t.number}_hires.png` }
+}));
+
+const allCards = [...processedPkmn, ...processedTrainers, ...energy];
+allCards.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+
+const outputPath = path.join(__dirname, '..', 'public', 'data', 'cards.json');
+fs.writeFileSync(outputPath, JSON.stringify(allCards, null, 2));
+console.log(`Generated ${allCards.length} cards (${processedPkmn.length} Pokémon, ${processedTrainers.length} Trainers, ${energy.length} Energy)`);
+console.log(`Saved to ${outputPath}`);
